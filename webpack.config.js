@@ -1,18 +1,17 @@
 const HtmlPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const miniCss = require('mini-css-extract-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const rules = require('./webpack.config.rules')();
 const path = require('path');
 
 rules.push({
-        test: /\.css$/i,
-        use: [
-            {
-              loader: MiniCssExtractPlugin.loader,
-            },
-            'css-loader',
-          ]
+    test:/\.(s*)css$/,
+    use: [
+        miniCss.loader,
+        'css-loader',
+        'sass-loader',
+    ]
 });
 
 module.exports = {
@@ -39,14 +38,12 @@ module.exports = {
               ecma: 6,
               mangle: true
             },
-            sourceMap: true
+            // sourceMap: true
           })
         ]
     },
     plugins: [
-        new MiniCssExtractPlugin({
-            // Options similar to the same options in webpackOptions.output
-            // all options are optional
+        new miniCss({
             filename: 'css/[name].css',
             chunkFilename: '[id].css',
             ignoreOrder: false, // Enable to remove warnings about conflicting order
