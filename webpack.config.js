@@ -23,7 +23,7 @@ module.exports = {
     },
     output: {
         filename: 'js/[name].[fullhash].js',
-        path: path.resolve('dist')
+        path: path.resolve('docs')
     },
     devtool: 'source-map',
     module: { rules },
@@ -52,6 +52,6 @@ module.exports = {
             title: 'GeoFeedback',
             template: 'index.hbs'
         }),
-        new CleanWebpackPlugin(['dist'])
+        new CleanWebpackPlugin(['docs'])
     ]
 };
