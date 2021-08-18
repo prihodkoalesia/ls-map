@@ -1,3 +1,6 @@
+import renderList from '../templates/list.hbs';
+import renderForm from '../templates/form.hbs';
+
 function initMap() {
     var currentPoints = {};
     if (localStorage.map) {
@@ -6,18 +9,17 @@ function initMap() {
 
     ymaps.ready(() => {
         let myPlacemark;
-        var geoObjects = [];
         let myMap = new ymaps.Map('map', {
             center: [53.902496, 27.561481],
             zoom: 10,
             controls: []
         });
 
-        var customItemContentLayout = ymaps.templateLayoutFactory.createClass(
+        const customItemContentLayout = ymaps.templateLayoutFactory.createClass(
             '<div class="" data-id="{{ properties.idForGeoObj }}">{{ properties.balloonContentHeader|raw }}</div>'
         );
 
-        var clusterer = new ymaps.Clusterer({
+        let clusterer = new ymaps.Clusterer({
             preset: 'islands#redClusterIcons',
             clusterDisableClickZoom: true,
             clusterOpenBalloonOnClick: true,
@@ -29,36 +31,11 @@ function initMap() {
         });
 
         const renderHeader = (reviewAr) => {
-            const block = document.querySelector('#template_list').cloneNode(true);
-            if (reviewAr.length > 0) {
-                let fragment = document.createDocumentFragment();
-                for (const review in reviewAr) {
-                    var { name, place, text, date = '' } = reviewAr[review];
-                    var line = block.querySelector('.review__item').cloneNode(true);
-                    const blockForText = line.querySelector('.review__item-text'),
-                        blockForName = line.querySelector('.review__item-name'),
-                        blockForPlace = line.querySelector('.review__item-place'),
-                        blockForDate = line.querySelector('.review__item-date');
-
-                    blockForText.textContent = text;
-                    blockForName.textContent = name;
-                    blockForPlace.textContent = place;
-                    blockForDate.textContent = date;
-                    fragment.append(line);
-                }
-                block.querySelector('.review__list').innerHTML = '';
-                block.querySelector('.review__list').style.display = 'block';
-                block.querySelector('.review__list').append(fragment);
-            }
-
-            return block.innerHTML;
-        }
+            return renderList({reviews: reviewAr});
+        };
 
         const renderBlock = () => {
-            let template = document.querySelector('#template');
-            const block = template.cloneNode(true);
-
-            return block.innerHTML;
+            return renderForm();
         };
 
         function addNewReview(form, coords, placemark = '') {
@@ -70,7 +47,7 @@ function initMap() {
             if (!name || !place || !text) {
                 alert('Все поля должны быть заполнены!')
             } else {
-                const newReview = { 'name': name, 'place': place, 'text': text, 'date': date };
+                const newReview = {'name': name, 'place': place, 'text': text, 'date': date};
 
                 if (!currentPoints[coords]) {
                     currentPoints[coords] = [];
@@ -87,15 +64,11 @@ function initMap() {
             }
         }
 
-        var i = 0;
-
         function createPlacemark(coords, reviewAr) {
-
             myPlacemark = new ymaps.Placemark(coords, {
                 balloonContentHeader: renderHeader(reviewAr),
                 balloonContent: renderBlock(),
                 myCoords: coords,
-                idForGeoObj: i
             }, {
                 preset: 'islands#redIcon',
                 balloonMaxHeight: 500,
@@ -111,13 +84,7 @@ function initMap() {
                 });
             }
 
-            myPlacemark.events.add('click', function (e) {
-                console.log(e.get('coords'));
-            });
-
-            geoObjects[i] = myPlacemark;
             clusterer.add(myPlacemark);
-            i++;
         }
 
         if (Object.entries(currentPoints).length > 0) {
@@ -132,14 +99,11 @@ function initMap() {
             if (e.get('target').geometry) {
                 const curPlaceMark = e.get('target');
                 let coords = e.get('target').geometry.getCoordinates();
-                const formList = document.querySelectorAll('form[name="review"]');
-
-                formList.forEach((form) => {
-                    form.addEventListener('submit', (e) => {
-                        e.preventDefault();
-                        addNewReview(form, coords, curPlaceMark);
-                    });
-                })
+                const form = document.querySelector('form[name="review"]');
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    addNewReview(form, coords, curPlaceMark);
+                });
             }
         });
 
@@ -151,17 +115,13 @@ function initMap() {
                     contentBody: renderBlock(),
                 }).then(
                     function () {
-                        const formList = document.querySelectorAll('form[name="review"]');
-
-                        formList.forEach((form) => {
-                            form.addEventListener('submit', (e) => {
-                                e.preventDefault();
-                                addNewReview(form, coords);
-                            });
-                        })
+                        const form = document.querySelector('form[name="review"]');
+                        form.addEventListener('submit', (e) => {
+                            e.preventDefault();
+                            addNewReview(form, coords);
+                        });
                     }
                 );
-
             } else {
                 myMap.balloon.close();
             }

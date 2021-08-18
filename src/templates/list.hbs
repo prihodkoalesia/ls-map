@@ -1,0 +1,12 @@
+<div class="review__list" >
+    {{#each reviews}}
+        <div class="review__item">
+            <p>
+                <span class="review__item-name">{{name}}</span>
+                <span class="review__item-place">{{place}}</span>
+                <span class="review__item-date">{{date}}</span>
+            </p>
+            <p class="review__item-text">{{text}}</p>
+        </div>
+    {{/each}}
+</div>
